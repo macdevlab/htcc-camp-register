@@ -88,6 +88,11 @@
   .pill.wait{background:var(--wait-bg);color:var(--wait)}
   .pill.in{background:#D3EEDF;color:var(--in)}
   .pill.out{background:#DDE3EB;color:var(--out)}
+  button.reset{
+    flex:0 0 30px;height:30px;padding:0;border-radius:99px;border:1px solid var(--line);
+    background:#fff;color:var(--danger);font-size:15px;line-height:1;cursor:pointer
+  }
+  button.reset:active{transform:scale(.94)}
   .acts{display:flex;gap:6px;padding:0 12px 12px}
   button.act{
     flex:1;padding:13px 8px;border-radius:10px;border:1px solid var(--line);
@@ -306,6 +311,7 @@ function render(){
     const st=statusOf(k.id);
     if(st==="in")nIn++; else if(st==="out")nOut++; else nWait++;
     const s=state[k.id]||{};
+    const hasState=!!(s.in||s.out||s.by||s.note);
     const row=document.createElement("div");
     row.className="row st-"+st;
     row.innerHTML=`
@@ -319,6 +325,7 @@ function render(){
           </details>
         </div>
         <span class="pill ${st}">${st==="in"?"On site":st==="out"?"Signed out":"Not arrived"}</span>
+        ${hasState?`<button class="reset" data-reset="${k.id}" data-n="${esc(k.n)}" data-walkin="${k.walkin?1:0}" title="Clear ${esc(k.n)}'s record">↺</button>`:""}
       </div>
       <div class="acts">
         <button class="act ${st==="in"?"on-in":""}" data-in="${k.id}" data-n="${esc(k.n)}">${st==="in"?"✓ In":"Sign in"}</button>
@@ -340,6 +347,15 @@ function render(){
   list.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>setOut(b.dataset.out,b.dataset.n));
   list.querySelectorAll("[data-by]").forEach(i=>i.onchange=()=>setField(i.dataset.by,"by",i.value));
   list.querySelectorAll("[data-note]").forEach(i=>i.onchange=()=>setField(i.dataset.note,"note",i.value));
+  list.querySelectorAll("[data-reset]").forEach(b=>b.onclick=()=>resetChild(b.dataset.reset,b.dataset.n,b.dataset.walkin==="1"));
+}
+function resetChild(id,name,isWalkin){
+  const msg=isWalkin
+    ? `Remove the walk-in "${name}" entirely? This can't be undone.`
+    : `Clear ${name}'s record for today? This removes sign-in/out times, collected-by and notes — use this if the wrong child was signed in by mistake.`;
+  if(!confirm(msg)) return;
+  delete state[id];
+  save();
 }
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtPhone=t=>t.startsWith("0")?t:"0"+t;
