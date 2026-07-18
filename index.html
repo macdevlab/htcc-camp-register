@@ -107,12 +107,16 @@
     position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
     padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;z-index:30
   }
-  .bar .wrapb{max-width:640px;margin:0 auto;display:flex;gap:8px;width:100%}
+  .bar .wrapb{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:8px;width:100%}
   .bar button{
     flex:1;padding:13px;border-radius:10px;border:1px solid var(--navy);background:#fff;
     color:var(--navy);font:700 14px Inter,sans-serif;cursor:pointer
   }
   .bar button.primary{background:var(--navy);color:#fff}
+  .bar-row{display:flex;gap:8px}
+  button.submit{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+  button.submit:disabled{opacity:.6}
+  #submitNote{font-size:11px;color:var(--muted);text-align:center}
   dialog{border:none;border-radius:14px;padding:18px;max-width:340px;width:92%;box-shadow:0 20px 50px rgba(16,24,40,.22)}
   dialog h3{margin:0 0 12px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.08em}
   dialog input{width:100%;padding:11px;margin-bottom:8px;border:1px solid var(--line);border-radius:9px;font:500 15px Inter,sans-serif}
@@ -155,9 +159,13 @@
 </div>
 
 <div class="bar"><div class="wrapb">
-  <button id="addBtn">+ Walk-in</button>
-  <button id="csvBtn">Export CSV</button>
-  <button id="allBtn" class="primary">Sign all out</button>
+  <div class="bar-row">
+    <button id="addBtn">+ Walk-in</button>
+    <button id="csvBtn">Export CSV</button>
+    <button id="allBtn">Sign all out</button>
+  </div>
+  <button id="submitBtn" class="submit">📤 Submit register</button>
+  <div id="submitNote"></div>
 </div></div>
 
 <dialog id="dlg">
@@ -189,6 +197,15 @@ const FIREBASE_CONFIG = {
   appId: "PASTE"
 };
 const DB_ROOT = "summerCamp2026";   // keeps camp data separate from the Sunday register
+
+/* ============================================================
+   2. SUBMIT TO GOOGLE SHEETS — paste the Apps Script Web App
+   URL and shared secret here (see README "Submitting the
+   register to Google Sheets"). Leave APPS_SCRIPT_URL as-is and
+   the Submit button will tell coaches it isn't set up yet.
+   ============================================================ */
+const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL";
+const APPS_SCRIPT_SECRET = "PASTE_YOUR_SHARED_SECRET";
 
 /* ---------- camp calendar ---------- */
 const DAYS = [
@@ -353,6 +370,45 @@ $("#csvBtn").onclick=()=>{
   a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
   a.download=`HTCC_register_${ISO[dayIdx]}.csv`; a.click();
 };
+async function submitRegister(){
+  const btn=$("#submitBtn"), noteEl=$("#submitNote");
+  if(APPS_SCRIPT_URL.startsWith("PASTE")){
+    alert('Submitting to Google Sheets isn’t set up yet. See README.md → "Submitting the register to Google Sheets".');
+    return;
+  }
+  const kids=bookedFor(dayIdx);
+  if(!kids.length){ alert("Nobody is booked for this day — nothing to submit."); return; }
+  if(!confirm(`Submit today's register (${DAYS[dayIdx]}) for ${kids.length} children to Google Sheets?\n\nThis adds a timestamped snapshot — you can submit again later if things change.`)) return;
+
+  const submittedAt=new Date().toISOString();
+  const rows=kids.map(k=>{
+    const s=state[k.id]||{}, st=statusOf(k.id);
+    return { date:ISO[dayIdx], day:DAYS[dayIdx], child:k.n, age:k.a||"",
+      status: st==="in"?"On site":st==="out"?"Signed out":"Not arrived",
+      timeIn:s.in||"", timeOut:s.out||"", collectedBy:s.by||"", notes:s.note||"",
+      coach:$("#coach").value, lead:$("#lead").value };
+  });
+
+  btn.disabled=true; btn.textContent="Submitting…";
+  try{
+    const res=await fetch(APPS_SCRIPT_URL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({secret:APPS_SCRIPT_SECRET, submittedAt, rows})
+    });
+    const data=await res.json();
+    if(!data.ok) throw new Error(data.error||"Unknown error from Apps Script");
+    btn.textContent="✓ Submitted";
+    noteEl.textContent=`Last submitted ${new Date(submittedAt).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})} · ${data.added} rows logged`;
+  }catch(err){
+    alert("Submission failed: "+err.message+"\n\nCheck the connection and try again — the register is still safely saved "+(live?"and synced":"on this device")+", nothing is lost.");
+    btn.textContent="📤 Submit register";
+  }finally{
+    btn.disabled=false;
+    setTimeout(()=>{ if(btn.textContent==="✓ Submitted") btn.textContent="📤 Submit register"; },4000);
+  }
+}
+$("#submitBtn").onclick=submitRegister;
 $("#addBtn").onclick=()=>$("#dlg").showModal();
 $("#wCancel").onclick=()=>$("#dlg").close();
 $("#wSave").onclick=()=>{

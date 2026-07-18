@@ -64,6 +64,89 @@ The indicator in the top-right of the header tells you which mode you're in:
 
 ---
 
+## Submitting the register to Google Sheets
+
+The **📤 Submit register** button sends a timestamped snapshot of that day's register
+(every booked child, their status, sign-in/out times, collected-by, notes, and the
+coach/lead names) to a new **Attendance Log** tab in the
+[Summer Camp Registration 2026 (Responses)](https://docs.google.com/spreadsheets/d/1ny2KWmWMTTIJT9usjGS28L4a2gnfQcpdhiwgD9zY0zs/edit)
+sheet. Coaches can submit as many times as they like during the day (e.g. once at
+pickup, again if a late correction comes in) — each submission just adds more rows,
+nothing is overwritten, so there's always a record to point to if a parent later has
+a question about when their child was signed in or out.
+
+Because this site is static (no server), sending data to Sheets needs a small piece of
+glue: a **Google Apps Script Web App** bound to the spreadsheet. This is a one-off setup
+step, done once by whoever owns the sheet:
+
+1. Open the spreadsheet → **Extensions → Apps Script**.
+2. Delete the placeholder code and paste in:
+
+   ```js
+   const SHARED_SECRET = "CHANGE_ME"; // must match APPS_SCRIPT_SECRET in index.html
+   const LOG_SHEET_NAME = "Attendance Log";
+
+   function doPost(e) {
+     try {
+       const body = JSON.parse(e.postData.contents);
+       if (body.secret !== SHARED_SECRET) {
+         return jsonOut({ ok: false, error: "Unauthorized" });
+       }
+       const ss = SpreadsheetApp.getActiveSpreadsheet();
+       let sheet = ss.getSheetByName(LOG_SHEET_NAME);
+       if (!sheet) {
+         sheet = ss.insertSheet(LOG_SHEET_NAME);
+         sheet.appendRow(["Submitted at","Date","Day","Child","Age","Status",
+           "Time in","Time out","Collected by","Notes","Coach","Lead coach"]);
+         sheet.setFrozenRows(1);
+       }
+       const submittedAt = body.submittedAt || new Date().toISOString();
+       const rows = (body.rows || []).map(r => [
+         submittedAt, r.date, r.day, r.child, r.age, r.status,
+         r.timeIn, r.timeOut, r.collectedBy, r.notes, r.coach, r.lead
+       ]);
+       if (rows.length) {
+         sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
+       }
+       return jsonOut({ ok: true, added: rows.length });
+     } catch (err) {
+       return jsonOut({ ok: false, error: String(err) });
+     }
+   }
+
+   function jsonOut(obj) {
+     return ContentService.createTextOutput(JSON.stringify(obj))
+       .setMimeType(ContentService.MimeType.JSON);
+   }
+   ```
+
+3. Change `CHANGE_ME` to a secret string of your choosing (any random phrase works).
+4. **Deploy → New deployment → type: Web app.**
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+   - Click **Deploy**, and authorize the permissions Google asks for (this is your
+     own script accessing your own sheet).
+5. Copy the **Web app URL** it gives you.
+6. In `index.html`, near the top of the `<script>` block, paste it in:
+
+   ```js
+   const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL";
+   const APPS_SCRIPT_SECRET = "CHANGE_ME"; // same string as in the script
+   ```
+
+7. Commit and push. The Submit button will now write to the sheet.
+
+**Security note:** the secret lives in the page's JavaScript, so it stops the URL being
+found and spammed by chance, but it is not a substitute for real authentication —
+anyone who reads the page source could see it. That's an acceptable trade-off for an
+internal coach tool on a link that isn't advertised publicly, but don't treat it as
+protecting sensitive data.
+
+If `APPS_SCRIPT_URL` is left as the placeholder, the Submit button tells the coach
+setup isn't finished yet rather than failing silently.
+
+---
+
 ## Updating the roster
 
 The children are baked into `index.html` in the `ROSTER` array:
