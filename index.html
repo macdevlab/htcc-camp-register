@@ -74,6 +74,13 @@
   .who{flex:1;min-width:0}
   .who .nm{font-weight:700;font-size:16px;line-height:1.2}
   .who .dt{font-size:12px;color:var(--muted);margin-top:2px}
+  .parent{margin-top:4px}
+  .parent summary{list-style:none;cursor:pointer;font-size:12px;color:var(--navy-lite);font-weight:600;display:flex;align-items:center;gap:4px;user-select:none}
+  .parent summary::-webkit-details-marker{display:none}
+  .parent summary::before{content:"▸";font-size:10px;transition:transform .15s}
+  .parent[open] summary::before{transform:rotate(90deg)}
+  .parent .info{font-size:13px;color:var(--ink);margin-top:4px;padding:6px 8px;background:var(--paper);border-radius:8px}
+  .parent .info a{color:var(--navy);font-weight:700;text-decoration:none}
   .pill{
     font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
     padding:4px 8px;border-radius:99px;white-space:nowrap
@@ -306,6 +313,10 @@ function render(){
         <div class="who">
           <div class="nm">${esc(k.n)}${k.walkin?" <span style='font-size:11px;color:var(--muted)'>(walk-in)</span>":""}</div>
           <div class="dt">${k.a?("Age "+k.a):"Age —"}${s.in?" · in "+s.in:""}${s.out?" · out "+s.out:""}</div>
+          <details class="parent">
+            <summary>Parent info</summary>
+            <div class="info">${parentInfo(k)}</div>
+          </details>
         </div>
         <span class="pill ${st}">${st==="in"?"On site":st==="out"?"Signed out":"Not arrived"}</span>
       </div>
@@ -331,6 +342,14 @@ function render(){
   list.querySelectorAll("[data-note]").forEach(i=>i.onchange=()=>setField(i.dataset.note,"note",i.value));
 }
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtPhone=t=>t.startsWith("0")?t:"0"+t;
+function parentInfo(k){
+  if(!k.p && !k.t) return "No contact info recorded";
+  const parts=[];
+  if(k.p) parts.push(esc(k.p));
+  if(k.t) parts.push(`<a href="tel:+44${k.t.replace(/^0/,"")}">${esc(fmtPhone(k.t))}</a>`);
+  return parts.join(" · ");
+}
 
 /* ---------- day picker ---------- */
 function buildDays(){
