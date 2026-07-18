@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17284B">
+<title>HTCC Summer Camp — Daily Register</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#17284B; --navy-lite:#2E4372;
+    --gold:#F2B705; --paper:#F6F7F9; --card:#FFFFFF;
+    --in:#1B8A4B; --in-bg:#E6F4EC;
+    --out:#5B6B84; --out-bg:#EAEEF3;
+    --wait:#B45309; --wait-bg:#FDF3E3;
+    --line:#D9DFE8; --ink:#101828; --muted:#667085;
+    --danger:#B42318;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:Inter,system-ui,-apple-system,sans-serif;
+    background:var(--paper); color:var(--ink);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:640px;margin:0 auto}
+
+  /* ---------- header ---------- */
+  header{background:var(--navy);color:#fff;padding:14px 16px 16px;position:sticky;top:0;z-index:20}
+  .brand{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .brand h1{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;
+    font-size:20px;letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1
+  }
+  .brand .sub{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+  #sync{font-size:10px;color:#9DB0CE;font-weight:600}
+  #sync.live::before{content:"●";color:#4ADE80;margin-right:4px}
+  #sync.local::before{content:"●";color:var(--gold);margin-right:4px}
+
+  /* signature: the live on-site tally */
+  .tally{
+    margin-top:14px;background:var(--navy-lite);border-radius:12px;
+    padding:12px 14px;display:flex;align-items:center;gap:14px
+  }
+  .tally .big{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;
+    font-size:52px;line-height:.86;color:var(--gold);min-width:2ch;text-align:center
+  }
+  .tally .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#C7D3E8;font-weight:700}
+  .tally .brk{font-size:12px;color:#E3E9F4;margin-top:3px;font-weight:500}
+  select{
+    width:100%;margin-top:12px;padding:11px 12px;border-radius:10px;border:1px solid #3A5183;
+    background:#fff;color:var(--ink);font:600 15px Inter,sans-serif
+  }
+
+  /* ---------- list ---------- */
+  main{padding:12px 12px 96px}
+  .meta{display:flex;gap:8px;margin-bottom:10px}
+  .meta input{
+    flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+    font:500 14px Inter,sans-serif;background:#fff;min-width:0
+  }
+  .row{
+    background:var(--card);border:1px solid var(--line);border-left:5px solid var(--line);
+    border-radius:12px;margin-bottom:8px;overflow:hidden
+  }
+  .row.st-in{border-left-color:var(--in);background:var(--in-bg)}
+  .row.st-out{border-left-color:var(--out);background:var(--out-bg)}
+  .row.st-wait{border-left-color:var(--wait)}
+  .top{display:flex;align-items:center;gap:10px;padding:12px 12px}
+  .who{flex:1;min-width:0}
+  .who .nm{font-weight:700;font-size:16px;line-height:1.2}
+  .who .dt{font-size:12px;color:var(--muted);margin-top:2px}
+  .pill{
+    font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:4px 8px;border-radius:99px;white-space:nowrap
+  }
+  .pill.wait{background:var(--wait-bg);color:var(--wait)}
+  .pill.in{background:#D3EEDF;color:var(--in)}
+  .pill.out{background:#DDE3EB;color:var(--out)}
+  .acts{display:flex;gap:6px;padding:0 12px 12px}
+  button.act{
+    flex:1;padding:13px 8px;border-radius:10px;border:1px solid var(--line);
+    background:#fff;font:700 14px Inter,sans-serif;color:var(--ink);cursor:pointer
+  }
+  button.act:active{transform:scale(.97)}
+  button.act.on-in{background:var(--in);border-color:var(--in);color:#fff}
+  button.act.on-out{background:var(--out);border-color:var(--out);color:#fff}
+  button.tel{flex:0 0 46px;font-size:17px;padding:13px 0;text-decoration:none;display:flex;align-items:center;justify-content:center}
+  .extra{display:flex;gap:6px;padding:0 12px 12px}
+  .extra input{
+    flex:1;padding:9px 10px;border:1px solid var(--line);border-radius:8px;
+    font:500 13px Inter,sans-serif;min-width:0;background:#fff
+  }
+  h2.sec{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;
+    letter-spacing:.1em;font-size:12px;color:var(--muted);margin:18px 4px 8px
+  }
+  .empty{padding:26px 14px;text-align:center;color:var(--muted);font-size:14px;
+    background:#fff;border:1px dashed var(--line);border-radius:12px}
+
+  /* ---------- footer bar ---------- */
+  .bar{
+    position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;z-index:30
+  }
+  .bar .wrapb{max-width:640px;margin:0 auto;display:flex;gap:8px;width:100%}
+  .bar button{
+    flex:1;padding:13px;border-radius:10px;border:1px solid var(--navy);background:#fff;
+    color:var(--navy);font:700 14px Inter,sans-serif;cursor:pointer
+  }
+  .bar button.primary{background:var(--navy);color:#fff}
+  dialog{border:none;border-radius:14px;padding:18px;max-width:340px;width:92%;box-shadow:0 20px 50px rgba(16,24,40,.22)}
+  dialog h3{margin:0 0 12px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.08em}
+  dialog input{width:100%;padding:11px;margin-bottom:8px;border:1px solid var(--line);border-radius:9px;font:500 15px Inter,sans-serif}
+  dialog .drow{display:flex;gap:8px;margin-top:6px}
+  dialog button{flex:1;padding:12px;border-radius:9px;border:1px solid var(--navy);background:#fff;color:var(--navy);font:700 14px Inter,sans-serif;cursor:pointer}
+  dialog button.primary{background:var(--navy);color:#fff}
+  .note{font-size:11px;color:var(--muted);text-align:center;padding:10px 16px 0}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">
+    <div>
+      <h1>Harrow Town CC</h1>
+      <div class="sub">Summer Camp 2026 · Register</div>
+    </div>
+    <div id="sync" class="local">Local only</div>
+  </div>
+
+  <div class="tally">
+    <div class="big" id="onsite">0</div>
+    <div>
+      <div class="lbl">On site now</div>
+      <div class="brk"><span id="brk">0 booked · 0 signed out · 0 not arrived</span></div>
+    </div>
+  </div>
+
+  <select id="day" aria-label="Choose the camp day"></select>
+</header>
+
+<main>
+  <div class="meta">
+    <input id="coach" placeholder="Coach on duty" autocomplete="name">
+    <input id="lead" placeholder="Lead coach" autocomplete="name">
+  </div>
+  <div id="list"></div>
+</main>
+</div>
+
+<div class="bar"><div class="wrapb">
+  <button id="addBtn">+ Walk-in</button>
+  <button id="csvBtn">Export CSV</button>
+  <button id="allBtn" class="primary">Sign all out</button>
+</div></div>
+
+<dialog id="dlg">
+  <h3>Add a walk-in</h3>
+  <input id="wName" placeholder="Child's full name">
+  <input id="wAge" placeholder="Age" inputmode="numeric">
+  <input id="wTel" placeholder="Parent mobile" inputmode="tel">
+  <div class="drow">
+    <button id="wCancel">Cancel</button>
+    <button id="wSave" class="primary">Add</button>
+  </div>
+</dialog>
+
+<p class="note">Children may only be released to a named parent or guardian. Minimum two adults on site at all times. Emergency: 999.</p>
+
+<script>
+/* ============================================================
+   1. FIREBASE  — paste the same config you use for the Sunday
+   register. Leave it as-is and the app still works, but it will
+   only save on THIS phone (no sharing between coaches).
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE.firebaseapp.com",
+  databaseURL: "https://PASTE-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "PASTE",
+  storageBucket: "PASTE.appspot.com",
+  messagingSenderId: "PASTE",
+  appId: "PASTE"
+};
+const DB_ROOT = "summerCamp2026";   // keeps camp data separate from the Sunday register
+
+/* ---------- camp calendar ---------- */
+const DAYS = [
+  "Mon 20 Jul","Tue 21 Jul","Wed 22 Jul","Thu 23 Jul","Fri 24 Jul",
+  "Mon 27 Jul","Tue 28 Jul","Wed 29 Jul","Thu 30 Jul","Fri 31 Jul",
+  "Mon 3 Aug","Tue 4 Aug","Wed 5 Aug","Thu 6 Aug","Fri 7 Aug",
+  "Mon 10 Aug","Tue 11 Aug","Wed 12 Aug","Thu 13 Aug","Fri 14 Aug"
+];
+const ISO = [
+  "2026-07-20","2026-07-21","2026-07-22","2026-07-23","2026-07-24",
+  "2026-07-27","2026-07-28","2026-07-29","2026-07-30","2026-07-31",
+  "2026-08-03","2026-08-04","2026-08-05","2026-08-06","2026-08-07",
+  "2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14"
+];
+
+/* ---------- roster: n=name a=age p=parent t=tel d=day indexes ---------- */
+const ROSTER = [{"n":"Arjun Patel","a":7,"p":"Vipul Patel","t":"7877857027","d":[10,11,12,13,14,15,16,17,18,19]},{"n":"Arnav Sikri","a":7,"p":"Rina Patel","t":"7951846248","d":[0,1,2,3,4]},{"n":"Dhvij Bhemvala","a":9,"p":"Jinal Bhemvala","t":"7586608490","d":[5,6,7,8,9]},{"n":"Druv Mistry","a":12,"p":"Gopi Mistry","t":"7957397048","d":[10,11,12,13,14]},{"n":"Freddie Thompson","a":14,"p":"Steve Thompson","t":"7703009359","d":[0,1,10,11,15,16,17]},{"n":"Guntaj Thind","a":6,"p":"Pardeep","t":"7587435810","d":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]},{"n":"Hardhik Pulluru","a":8,"p":"Yeshwanth Pulluru","t":"7887175143","d":[10,11,12,13,14,15,16,17,18,19]},{"n":"Ishaan Goswami","a":13,"p":"Amit Goswami","t":"7545150845","d":[0,1,2,3,4]},{"n":"Jaiden Patel","a":7,"p":"Amit Patel","t":"7783834343","d":[0,1,2,3,4]},{"n":"Karan Kidecha","a":8,"p":"Bhavini Shah","t":"7923625421","d":[0,5,10,15]},{"n":"Kaylen Mistry","a":null,"p":"Prashant Mistry","t":"7852169007","d":[0,1,2,3,4]},{"n":"Krish Kidecha","a":8,"p":"Bhavini Shah","t":"7923625421","d":[0,5,10,15]},{"n":"Krishiv Patel","a":5,"p":"Nilam Patel","t":"7788290620","d":[0,2,3,4]},{"n":"Panav Patel","a":7,"p":"Anish Patel","t":"7852106789","d":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]},{"n":"Sahil","a":11,"p":"Rashmi Chanchlani","t":"7786086375","d":[0,1,2,3,4,5,6,7,8,9,15,16,17,18,19]},{"n":"Shyam Patel","a":9,"p":"Dhaval Patel","t":"7440479107","d":[5,6,7,8,9]},{"n":"Vankshit","a":12,"p":"Kshitij Srivastava","t":"7466535594","d":[10,11,12,13,14,15,16,17,18,19]},{"n":"Yash Krishna","a":10,"p":"Sindhu Krishna","t":"7947770272","d":[0,4,5,9,10,14]}];
+
+/* ============================================================
+   storage: Firebase if configured, else this device only
+   ============================================================ */
+let db=null, live=false, state={}, dayIdx=0, walkins={};
+const $=s=>document.querySelector(s);
+
+function key(i){ return DB_ROOT+"_day"+i; }
+function localGet(i){ try{ return JSON.parse(localStorage.getItem(key(i))||"{}"); }catch(e){ return {}; } }
+function localSet(i,v){ try{ localStorage.setItem(key(i),JSON.stringify(v)); }catch(e){} }
+
+async function initFirebase(){
+  if(FIREBASE_CONFIG.apiKey.startsWith("PASTE")) return false;
+  try{
+    const [{initializeApp},{getDatabase,ref,onValue,set}] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js")
+    ]);
+    const app=initializeApp(FIREBASE_CONFIG);
+    const rtdb=getDatabase(app);
+    db={ref,onValue,set,rtdb};
+    live=true;
+    return true;
+  }catch(e){ console.warn("Firebase unavailable, using this device only",e); return false; }
+}
+
+function watchDay(i){
+  if(!live){ state=localGet(i); render(); return; }
+  const r=db.ref(db.rtdb, DB_ROOT+"/days/"+i);
+  db.onValue(r, snap=>{ state=snap.val()||{}; render(); });
+}
+function save(){
+  if(live){ db.set(db.ref(db.rtdb, DB_ROOT+"/days/"+dayIdx), state); }
+  else { localSet(dayIdx,state); }
+  render();
+}
+
+/* ============================================================
+   register logic
+   ============================================================ */
+function bookedFor(i){
+  const list = ROSTER.filter(k=>k.d.includes(i)).map((k,ix)=>({...k,id:slug(k.n)}));
+  const extra = Object.values(state).filter(v=>v&&v.walkin).map(v=>({n:v.name,a:v.age||"",p:"",t:v.tel||"",id:slug(v.name),walkin:true}));
+  const seen=new Set(list.map(x=>x.id));
+  extra.forEach(x=>{ if(!seen.has(x.id)) list.push(x); });
+  return list.sort((a,b)=>a.n.toLowerCase()<b.n.toLowerCase()?-1:1);
+}
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"_");
+const now=()=>new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+
+function statusOf(id){ const s=state[id]; if(!s) return "wait"; if(s.out) return "out"; if(s.in) return "in"; return "wait"; }
+
+function setIn(id,name){
+  const s=state[id]||{};
+  if(s.in && !s.out){ delete s.in; }          // tap again to undo
+  else { s.in=now(); delete s.out; }
+  s.name=name; state[id]=s; save();
+}
+function setOut(id,name){
+  const s=state[id]||{};
+  if(s.out){ delete s.out; }
+  else { if(!s.in) s.in=now(); s.out=now(); }
+  s.name=name; state[id]=s; save();
+}
+function setField(id,f,v){ const s=state[id]||{}; s[f]=v; state[id]=s;
+  if(live) db.set(db.ref(db.rtdb,DB_ROOT+"/days/"+dayIdx), state); else localSet(dayIdx,state);
+}
+
+function render(){
+  const kids=bookedFor(dayIdx);
+  const list=$("#list"); list.innerHTML="";
+  let nIn=0,nOut=0,nWait=0;
+  kids.forEach(k=>{
+    const st=statusOf(k.id);
+    if(st==="in")nIn++; else if(st==="out")nOut++; else nWait++;
+    const s=state[k.id]||{};
+    const row=document.createElement("div");
+    row.className="row st-"+st;
+    row.innerHTML=`
+      <div class="top">
+        <div class="who">
+          <div class="nm">${esc(k.n)}${k.walkin?" <span style='font-size:11px;color:var(--muted)'>(walk-in)</span>":""}</div>
+          <div class="dt">${k.a?("Age "+k.a):"Age —"}${s.in?" · in "+s.in:""}${s.out?" · out "+s.out:""}</div>
+        </div>
+        <span class="pill ${st}">${st==="in"?"On site":st==="out"?"Signed out":"Not arrived"}</span>
+      </div>
+      <div class="acts">
+        <button class="act ${st==="in"?"on-in":""}" data-in="${k.id}" data-n="${esc(k.n)}">${st==="in"?"✓ In":"Sign in"}</button>
+        <button class="act ${st==="out"?"on-out":""}" data-out="${k.id}" data-n="${esc(k.n)}">${st==="out"?"✓ Out":"Sign out"}</button>
+        ${k.t?`<a class="act tel" href="tel:+44${k.t.replace(/^0/,"")}" title="Call parent">📞</a>`:""}
+      </div>
+      <div class="extra">
+        <input placeholder="Collected by" value="${esc(s.by||"")}" data-by="${k.id}">
+        <input placeholder="Notes" value="${esc(s.note||"")}" data-note="${k.id}">
+      </div>`;
+    list.appendChild(row);
+  });
+  if(!kids.length) list.innerHTML='<div class="empty">No children booked for this day.</div>';
+
+  $("#onsite").textContent=nIn;
+  $("#brk").textContent=`${kids.length} booked · ${nOut} signed out · ${nWait} not arrived`;
+
+  list.querySelectorAll("[data-in]").forEach(b=>b.onclick=()=>setIn(b.dataset.in,b.dataset.n));
+  list.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>setOut(b.dataset.out,b.dataset.n));
+  list.querySelectorAll("[data-by]").forEach(i=>i.onchange=()=>setField(i.dataset.by,"by",i.value));
+  list.querySelectorAll("[data-note]").forEach(i=>i.onchange=()=>setField(i.dataset.note,"note",i.value));
+}
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- day picker ---------- */
+function buildDays(){
+  const sel=$("#day");
+  DAYS.forEach((d,i)=>{
+    const o=document.createElement("option");
+    const wk=Math.floor(i/5)+1;
+    o.value=i; o.textContent=`${d}  ·  Week ${wk}`;
+    sel.appendChild(o);
+  });
+  const today=new Date().toISOString().slice(0,10);
+  const t=ISO.indexOf(today);
+  dayIdx = t>=0 ? t : 0;
+  sel.value=dayIdx;
+  sel.onchange=()=>{ dayIdx=+sel.value; watchDay(dayIdx); };
+}
+
+/* ---------- footer actions ---------- */
+$("#allBtn").onclick=()=>{
+  const kids=bookedFor(dayIdx).filter(k=>statusOf(k.id)==="in");
+  if(!kids.length){ alert("Nobody is currently signed in."); return; }
+  if(!confirm(`Sign out all ${kids.length} children still on site?`)) return;
+  kids.forEach(k=>{ const s=state[k.id]||{}; s.out=now(); s.name=k.n; state[k.id]=s; });
+  save();
+};
+$("#csvBtn").onclick=()=>{
+  const kids=bookedFor(dayIdx);
+  const rows=[["Date","Day","Child","Age","Status","Time in","Time out","Collected by","Notes","Coach","Lead coach"]];
+  kids.forEach(k=>{
+    const s=state[k.id]||{}, st=statusOf(k.id);
+    rows.push([ISO[dayIdx],DAYS[dayIdx],k.n,k.a||"",
+      st==="in"?"On site":st==="out"?"Signed out":"Not arrived",
+      s.in||"",s.out||"",s.by||"",s.note||"",$("#coach").value,$("#lead").value]);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download=`HTCC_register_${ISO[dayIdx]}.csv`; a.click();
+};
+$("#addBtn").onclick=()=>$("#dlg").showModal();
+$("#wCancel").onclick=()=>$("#dlg").close();
+$("#wSave").onclick=()=>{
+  const n=$("#wName").value.trim(); if(!n){ $("#wName").focus(); return; }
+  const id=slug(n);
+  state[id]={walkin:true,name:n,age:$("#wAge").value.trim(),tel:$("#wTel").value.trim(),in:now()};
+  $("#wName").value=$("#wAge").value=$("#wTel").value="";
+  $("#dlg").close(); save();
+};
+
+/* ---------- boot ---------- */
+(async ()=>{
+  buildDays();
+  const ok=await initFirebase();
+  const s=$("#sync");
+  if(ok){ s.className="live"; s.textContent="Synced"; }
+  else  { s.className="local"; s.textContent="This device only"; }
+  watchDay(dayIdx);
+})();
+</script>
+</body>
+</html>

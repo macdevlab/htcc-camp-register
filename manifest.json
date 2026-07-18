@@ -1,0 +1,10 @@
+{
+  "name": "HTCC Summer Camp Register",
+  "short_name": "Camp Register",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#17284B",
+  "theme_color": "#17284B",
+  "description": "Daily attendance register for the Harrow Town CC junior summer cricket camp.",
+  "icons": []
+}
