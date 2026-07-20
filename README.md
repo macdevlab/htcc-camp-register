@@ -160,7 +160,7 @@ const ROSTER = [{"n":"Arjun Patel","a":7,"p":"Vipul Patel","t":"7877857027","d":
   (0 = Mon 20 Jul, 4 = Fri 24 Jul, 5 = Mon 27 Jul … 19 = Fri 14 Aug)
 
 If bookings change, edit that array and commit. Last generated from the registration
-sheet with **20 children**.
+sheet with **21 children**.
 
 ---
 
